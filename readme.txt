@@ -11,6 +11,9 @@ controller 에서 사용 되는 개체생성 순서
 3. service에 Autowired, Inject 사용해서 주입
 4. controller에 Autowired, Inject 사용해서 주입
 
+sqlmapper
+src/main/resources -> mybatis-config.xml (마이바티스 설정)
+src/main/resources -> mapper.xml (실제 쿼리)
 
 기본 경로
 
@@ -29,3 +32,28 @@ controller 에서 사용 되는 개체생성 순서
 |                    |-- 페이지보관
 |            |-- web.xml
 
+jackson 관련
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.9.8</version>
+</dependency>
+위 디펜던시만 추가하면 알아서 나머지 해줌
+json 한글, 리스트 관련 설정 servlet 설정에서 아래 설정 확인
+<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="webBindingInitializer">
+            <bean class="egovframework.example.cmmn.web.EgovBindingInitializer"/>
+        </property>
+        <property name="messageConverters">
+			<list>
+				<bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" />
+				<bean class="org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter" >
+					<property name = "supportedMediaTypes">
+						<list>
+							<value>*/*;charset=UTF-8</value>
+						</list>
+					</property>
+				</bean>
+			</list>
+		</property>
+    </bean>
