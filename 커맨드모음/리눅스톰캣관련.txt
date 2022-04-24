@@ -1,0 +1,12 @@
+톰캣 시작
+./tomcat/bin/startup.sh
+
+톰캣 종료
+./tomcat/bin/shutdown.sh
+
+톰캣 실시간 로그확인
+tail ./tomcat/logs/catalina.out
+
+카타리나 초기화 
+# cd tomcat/logs
+# cat /dev/null > catalina.out

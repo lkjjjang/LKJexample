@@ -1,0 +1,25 @@
+C:\Users\lkjjj\Desktop\OOP\Assignment2>javac src/academy/pocu/comp2500/assignment2/*.java -d bin
+
+한글때문에 인코딩이 안될때는 .....assignment2/*.java -encoding UTF-8 -d bin  (-encoding UTF-8 를 추가)
+
+최상위 폴더 Assignment2 에서 컴파일
+
+-d bin은 앞에 지정한 루트에 bin이라는 폴더를 생성
+(-d 를 하지않으면 현재 *.java 파일이있는 폴더에 컴파일되어 *.class 파일이 생성)
+
+Assignment2(최상위) 폴더에 src폴더(처음패키지생성시 생성), bin폴더(컴파일시 생성)
+
+(컴파일된)Assignment2/bin/academy/pocu/comp2500/assignment2 순서로 생성 assignment2 폴더에 컴파일된 *.class 파일이 생성됨
+
+(컴파일안함)Assignment2/src/academy/pocu/comp2500/assignment2 이부분은 처음 패키지 생성시 생성
+
+
+
+실행은 bin 폴더로 이동
+
+C:\Assignment2\bin>java 패키지명.main함수 있는 파일명(확장자는 제외)
+패키지명은 폴더수순  academy.pocu.comp2500.assignment2  (당연하지만 패키지명이 없으면 다른 클래스들을 인식못함)
+main함수 있는 파일 Program
+academy.pocu.comp2500.assignment2.Program 하면 실행가능( .점 대신 / 사용가능) 
+
+최하위 폴더까지 내려가서 main함수 클래스를 실행하는게 아님
