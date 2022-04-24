@@ -1,0 +1,167 @@
+-------NULL 관련 함수
+NVL(컬럼, 널일경우 사용할 값)
+NVL(AGE, 10) - AGE컬럼이 널일 경우 10이 넣어짐
+
+NVL2(컬럼, 널이 아닐경우 사용할값, 널일 경우 사용할 값)
+NVL2(AGE, TRUNC(AGE/10) * 10, 0) - NVL은 모든 컬럼에서 연산 2는 널이 아닐 경우에만 사용하니 효과적
+
+NULLIF(컬럼, 값1) - 컬럼에 있는 값이 값1 과 일치하면 널로 만들어줌
+
+DECODE(GENDER, '남성', 값1, 값2) 
+    - GENDER가 남성일 경우 값1 아닐경우 값2 삼항연산자같음 값1,2는 세트 한개만 입력시 ELSE로 보면됨
+
+DECODE (SUBSTR (PHONE, 1, 3), '010', '신규번호', '011', '구번호', '기타'
+-----------------
+
+
+
+
+
+-------ROW_NUMBER()
+ROWNUM
+HIT기준 오름차순 정렬 결과물에서 ROWNUM이 HIT순에 의해 뒤죽박죽
+SELECT ROWNUM, ID, TITLE, WRITER_ID, REGDATE, HIT
+FROM NOTICE
+ORDER BY HIT;
+
+HIT기준 오름차순 정렬 결과물에 컬럼명 은 1,2,3,4,5 처럼 나옴(HIT가 중복되어도 순차정렬)
+SELECT ROW_NUMBER() OVER (ORDER BY HIT) AS ROWNUM, ID, TITLE, WRITER_ID, REGDATE, HIT 
+FROM NOTICE;
+
+HIT기준 오름차순 정렬 결과물에 컬럼명 은 1,1,3,3,5 처럼 나옴
+SELECT RANK() OVER (ORDER BY HIT) AS 컬럼명, ID, TITLE, WRITER_ID, REGDATE, HIT 
+FROM NOTICE;
+
+HIT기준 오름차순 정렬 결과물에 컬럼명 은 1,1,2,2,3 처럼 나옴
+SELECT DENSE_RANK() OVER (ORDER BY HIT) AS 컬럼명, ID, TITLE, WRITER_ID, REGDATE, HIT 
+FROM NOTICE;
+------------------
+
+
+-------서브쿼리
+DB에서 하나의 결과물을 만들어 사용한다는 개념
+()로 묶은 쿼리가 먼저 실행되어 나온 결과물을 이용해 다시 작업
+최신등록글 5개 뽑기
+SELECT * 
+FROM (SELECT * FROM NOTICE ORDER BY REGDATE DESC) 
+WHERE ROWNUM BETWEEN 1 AND 5;
+
+평균나이 이상인 멤버 뽑기
+SELECT * 
+FROM MEMBER 
+WHERE AGE > (SELECT ROUND(AVG(AGE)) FROM MEMBER);
+-------------------
+
+
+-------INNER조인
+아래 방법은 ANSI쿼리 통합적으로 사용하는 조인문
+MEMBER 테이블과 NOTICE 테이블 에서 상호간에 사용되지 않은 레코드는 결과로 나오지 않는다
+MEMBER에 ID 에 이기주, 김성미
+NOTICE에 WRITER_ID 에 이기주, 김세정 
+일경우 최종 반환되는 레코드는 이기주 관련 레코드 1개뿐
+INNER JOIN
+SELECT * FROM MEMBER INNER JOIN NOTICE ON MEMBER.ID = NOTICE.WRITER_ID;
+
+LEFT / RIGHT / FULL 아웃터 조인
+쿼리문에서 조인절 왼, 오 를 구분해 해당하는 예약어를 기준으로
+아웃터(상호간에 관계없는 컬럼)를 포함시켜 결과를 반환
+MEMBER를 기준으로 NOTICE에 자료를 MEMBER 테이블에 붙여 반환
+자료가 없는 곳은 널로채워 반환
+SELECT * FROM MEMBER LEFT JOIN NOTICE ON MEMBER.ID = NOTICE.WRITER_ID;
+
+MEMBER가 작성한 게시글 갯수 반환
+ROW_NUMBER() 는 ORDER BY 하기 위에 넣음
+SELECT ROW_NUMBER() OVER (ORDER BY COUNT(N.WRITER_ID) desc), M.ID, M.NAME, COUNT(N.WRITER_ID) 
+FROM MEMBER M LEFT OUTER JOIN NOTICE N ON M.ID = N.WRITER_ID
+GROUP BY M.ID, M.NAME;
+
+SELF JOIN
+MEMBER의 상사 정보를 함께 반환
+결국 필요한건 모든 MEMBER정보 + 상사정보 이기 떄문에 MEMBER를 기준으로 LEFT OUTER JOIN함 
+SELECT M.*, B.NAME BOSS_NAME 
+FROM MEMBER M LEFT OUTER JOIN MEMBER B ON B.ID = M.BOSS_ID;
+--------------------------
+
+
+
+-------유니온(UNION)
+반환된 레코드들을 덫 붙여 만들어 지는 결과물
+
+UNION 데이터가 완벽하게 일치하는 부분은 한곳에서만 나옴
+SELECT ID, NAME FROM MEMBER
+UNION
+SELECT WRITER_ID, TITLE FROM NOTICE;
+
+ALL 일치하는 데이터도 양쪽에서 모두 나옴
+MINUS 합쳐지는 것이 아니고 UNION 뒤에 있는 내용중 앞 테이블에 있는 내용이 있으면 제외하고 출력
+INTERSECT 일치하는 데이터만 나옴
+--------------------------
+
+
+
+-------View(뷰)
+데이터를 모아 만들어둔 가상의 테이블
+입력, 수정이 불가능 읽기만 가능
+
+CREATE VIEW NOTICE_VIEW
+AS
+SELECT N.ID, N.TITLE, N.WRITER_ID, M.NAME WRITER_NAME, COUNT(C.ID) COMMENT_CNT 
+FROM MEMBER M 
+RIGHT OUTER JOIN NOTICE N ON M.ID = N.WRITER_ID
+LEFT OUTER JOIN "COMMENT" C ON N.ID = C.NOTICE_ID
+GROUP BY N.ID, N.TITLE, N.WRITER_ID, M.NAME;
+---------------------------
+
+
+
+-------제약조건
+도메인, 체크, 릴레이션, 엔티티 제약조건
+도메인 - null, not null, default 등등
+
+체크 - 도메인제약으로 거를수 없는 패턴을 거를수있는 제약조건
+GUI환경에서 하는게 편함
+ALTER TABLE NOTICE ADD CONSTRAINT [제약조건명] CHECK([설정하려는 컬럼] LIKE '010-%-____')
+
+정규식활용 (^ $ 붙이면 처음과 끝이 정규식으로만 되어야함 // 붙이지 않으면 앞뒤에 다른 내용이 있어도 적용됨)
+ALTER TABLE NOTICE ADD CONSTRAINT [제약조건명] CHECK(REGEXP_LIKE([컬럼명],  '^01[01]-\d{3,4}-\d{4}$'))
+
+primary key - 기본키 중복, 널 허용되지 않음
+unique - 기본적으로 중복만 허용하지 않음 null은 직접 수정하여 허용을 관리할수 있음
+----------------
+
+
+
+--------시퀀스
+필요한 기능을 만들어 사용하는 개념
+mysql에 auto_increment 기능을 오라클에선 시퀀스로 만들어 사용
+만드는 방법은 gui를 통해 만들면 편함
+사용방법 해당컬럼에 시퀀스사용 직접 만든 시퀀스명을 입력하면 해당컬럼을 입력하지 않아도 자동으로 기입
+원시적인방법 NOTICE_ID_SEQ.NEXTVAL 로 마지막 값을 꺼내줌 (NOTICE_ID_SEQ은 시퀀스명 직접만듬)
+-----------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,119 @@
+테이블 생성
+create table [테이블명](id int,name varchar(20));
+
+삽입
+1.insert into   명령어
+2.user(컬럼명)    테이블명(컬럼명 생략시 순서대로 자동입력)
+3.values('test','1', now(), '100', now(), 'lkj@naver.com'); 속성값 입력
+INSERT INTO USER VALUES('test','1', now(), '100', now(), 'lkj@naver.com');
+
+삭제
+1. DELETE 명령어
+2. FROM user user테이블로 부터
+3. WHERE id = '선택대상' id 컬럼에서 선택대상과 일치하는 레코드
+DELETE FROM user WHERE id = '선택대상';
+
+업데이트
+1. UPDATE 명령어
+2. user 테이블명
+3. SET score = '50'     // score 컬럼을 50으로 교체
+4. WHERE id = 'test'     // id 컬럼값이 test 인 레코드를 선택하여 3번을 실행
+UPDATE user SET score = '50' WHERE id = 'test';  
+
+테이블 조인
+SELECT * FROM topic LEFT JOIN author ON topic.author_id=author.id;
+1. SELECT * FROM topic LEFT JOIN     // topic 테이블 선택하여 왼쪽에 고정 이후에 오는 테이블은 오른쪽에 추가
+2. author ON    //  author 테이블 선택 
+3. topic.author_id = author.id;      // topic테이블의 author_id 컬럼과 author 테이블의 id 를 일치시켜 조인
+
+컬럼 관련 쿼리
+컬럼 추가
+alter table [테이블명] add [컬럼명] [타입] [옵션]; 
+ex) alter table [테이블명] add [컬럼명] varchar(100) not null default '0'; 
+
+컬럼 삭제 
+alter table [테이블명] drop [컬럼명];
+
+컬럼명 변경 및 타입 변경
+alter table [테이블명] change [컬럼명] [변경할컬럼명] varchar(12);
+
+컬럼타입 수정
+alter table [테이블명] modify [컬럼명] varchar(14);
+
+테이블명 수정
+alter table [테이블명] rename [변경할테이블명];
+
+테이블 삭제
+drop table [테이블명];
+
+테이블 생성시 사용된 쿼리
+SHOW CREATE TABLE 테이블명;
+
+외래키 사용해서 테이블 생성
+create table boo(
+    userid int(11),
+    test varchar(20),
+    foreign key(userid) references ///1. foo(id) /// /// 2. on update cascade/// 
+    );
+1. 부모테이블명 (부모테이블에서 사용하려는 컬럼명)
+아래 세개는 옵션
+2. on update cascade 부모테이블에서 값 변경시 본 테이블도 함께 변경
+3. on delete cascade 부모테이블에서 값 삭제시 본 테이블도 함께 삭제
+4. on delete set null 부모테이블에서 값 삭제시 본 테이블은 null로 변경
+
+외래키 기존테이블에서 변경
+기존의 foreign key 지우는 방법
+ALTER TABLE table_name DROP FOREIGN KEY [심볼]
+
+// 실제 사용 예제
+ALTER TABLE order_items DROP FOREIGN KEY order_items_ibfk_1;
+
+// ON DELETE CASCADE 포함한 foreign key 재생성
+ALTER TABLE [테이블명]
+ADD FOREIGN KEY ([외래키를 삽입할 컬럼명]) 
+REFERENCES [부모테이블] ([가져올 부모테이블의 컬럼명]) [사용하고자 하는 옵션];
+
+// 실제 사용 예제
+ALTER TABLE order_items 
+ADD FOREIGN KEY (item_id) 
+REFERENCES orders (id)
+ON DELETE CASCADE;
+
+
+다음 명령어로 foreign key symbol을 조회한다.
+SHOW CREATE TABLE [테이블명]; // 심볼 조회
+그러면 'board_ibfk_1'과 같은 형태로 foreign key가 조회된다.
+2번 ALTER TABLE [테이블명] DROP FOREIGN KEY [심볼];
+
+
+
+
+ROWNUM 사용
+SELECT * FROM /// 시작
+(SELECT @ROWNUM := @ROWNUM + 1 AS [where절에서 사용하는 컬럼명], [컬럼명], [컬럼명] //// 나타낼 컬럼
+FROM [테이블명], (SELECT @ROWNUM := 0) //// 
+AS ROWCOLUMN ORDER BY regdate DESC) AS rownum_table  ////  ORDER BY regdate DESC == regdate 기준으로 정렬
+WHERE rownum >= 1 and rownum <= 5;
+
+ROWNUM + LIKE 사용
+ SELECT * FROM
+ (SELECT @ROWNUM := @ROWNUM + 1 AS rownum, jspTest.* /////  AS rownum == rownum컬럼추가 ////  jspTest.*   jspTest 테이블의 모든컬럼추가
+ FROM jspTest, (SELECT @ROWNUM := 0) AS rowcolumn WHERE writer_id LIKE '%lk%' ORDER BY regdate DESC) AS rownum_table
+ WHERE rownum >= 1 AND rownum <= 3;
+
+
+SELECT * FROM 
+(SELECT @ROWNUM := @ROWNUM + 1 AS rownum, NOTICE.* 
+FROM NOTICE, (SELECT @ROWNUM := 0) AS rowcolumn WHERE TITLE LIKE '%%' ORDER BY REGDATE DESC) AS rownum_table 
+WHERE rownum >= 1 AND rownum <= 10;
+
+select N.ID, N.TITLE, N.WRITER_ID, N.REGDATE, N.HIT, N.FILES, count(C.ID) AS CMT_COUNT from NOTICE N
+left join COMMENT C on N.ID = C.NOTICE_ID
+group by N.ID, N.TITLE, N.WRITER_ID, N.REGDATE, N.HIT, N.FILES
+order by N.REGDATE desc;
+
+
+
+
+커맨드 한글화
+chcp 65001 (한칸띄기)
